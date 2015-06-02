@@ -9,10 +9,14 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   eigen_conversions
+  message_generation
 )
 
 find_package(PkgConfig REQUIRED)
 find_package(libpointmatcher REQUIRED)
+
+add_service_files(FILES MatchClouds.srv)
+generate_messages(DEPENDENCIES sensor_msgs geometry_msgs)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -24,6 +28,7 @@ catkin_package(
   tf
   tf_conversions
   eigen_conversions
+  message_runtime
 )
 
 # c++ 0x
@@ -44,12 +49,18 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 add_definitions(-DHAVE_YAML_CPP)
 include_directories(
   include
-  ${PM_INCLUDE_DIRS}
+  ${libpointmatcher_INCLUDE_DIRS}
 )
+
+link_directories(${libpointmatcher_LIB})
 
 add_library(pointmatcher_ros src/point_cloud.cpp src/transform.cpp)
 include_directories(${catkin_INCLUDE_DIRS})
-target_link_libraries(pointmatcher_ros ${catkin_LIBRARIES} ${PM_LIBRARIES})
+target_link_libraries(pointmatcher_ros pointmatcher ${catkin_LIBRARIES})
+
+add_executable(matcher_service src/matcher_service.cpp src/point_cloud.cpp src/transform.cpp)
+add_dependencies(matcher_service ${PROJECT_NAME}_gencpp)
+target_link_libraries(matcher_service pointmatcher ${catkin_LIBRARIES})
 
 install(TARGETS pointmatcher_ros
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
