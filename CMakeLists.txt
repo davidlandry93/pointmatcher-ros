@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(PM libpointmatcher REQUIRED)
+find_package(libpointmatcher REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
