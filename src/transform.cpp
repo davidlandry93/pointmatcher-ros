@@ -12,6 +12,8 @@
 	#define transformEigenToTF TransformEigenToTF
 #endif // !ROS_VERSION_MINIMUM(1, 9, 30)
 
+#define WAIT_TRANSFORM_TIMEOUT 3.0
+
 namespace PointMatcher_ros
 {
 	template<typename T>
@@ -20,7 +22,7 @@ namespace PointMatcher_ros
 		typedef typename PointMatcher<T>::TransformationParameters TransformationParameters;
 		
 		tf::StampedTransform stampedTr;
-		listener.waitForTransform(target, source, stamp, ros::Duration(0.1));
+        listener.waitForTransform(target, source, stamp, ros::Duration(WAIT_TRANSFORM_TIMEOUT));
 		listener.lookupTransform(target, source, stamp, stampedTr);
 						
 		Eigen::Affine3d eigenTr;
