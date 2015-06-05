@@ -24,7 +24,7 @@ class CloudMatcher
 	ros::NodeHandle& n;
 	
 	PM::ICP icp;
-	
+    bool traceMatching;
 	ros::ServiceServer service;
 	
 public:
@@ -56,6 +56,13 @@ CloudMatcher::CloudMatcher(ros::NodeHandle& n):
 		ROS_WARN_STREAM("No config file specified, using default ICP chain.");
 		icp.setDefault();
 	}
+
+    if(!(ros::param::get("~trace", traceMatching)))
+    {
+        traceMatching = false;
+    } else {
+        ROS_INFO("Trance of the matched clouds demanded.");
+    }
 	
 	// replace logger
 	if (getParam<bool>("useROSLogger", false))
@@ -104,9 +111,10 @@ bool CloudMatcher::match(pointmatcher_ros::MatchClouds::Request& req, pointmatch
 	}
 	
 	// call ICP
+    PM::TransformationParameters transform;
 	try 
 	{
-		const PM::TransformationParameters transform(icp(readingCloud, referenceCloud));
+        transform = icp(readingCloud, referenceCloud);
 		tf::transformTFToMsg(PointMatcher_ros::eigenMatrixToTransform<float>(transform), res.transform);
 		ROS_INFO_STREAM("match ratio: " << icp.errorMinimizer->getWeightedPointUsedRatio() << endl);
 	}
@@ -115,6 +123,25 @@ bool CloudMatcher::match(pointmatcher_ros::MatchClouds::Request& req, pointmatch
 		ROS_ERROR_STREAM("ICP failed to converge: " << error.what());
 		return false;
 	}
+
+    if(traceMatching)
+    {
+        std::stringstream ss;
+        ss << "reading_" << req.readings.header.seq << ".vtk";
+        readingCloud.save(ss.str());
+
+        ss.str(std::string());
+        ss << "reference_" << req.readings.header.seq << ".vtk";
+        referenceCloud.save(ss.str());
+
+        PM::Transformation* rigidTrans;
+        rigidTrans = PM::get().REG(Transformation).create("RigidTransformation");
+        PM::DataPoints matchedCloud = rigidTrans->compute(readingCloud, transform);
+
+        ss.str(std::string());
+        ss << "matched_" << req.readings.header.seq << ".vtk";
+        matchedCloud.save(ss.str());
+    }
 	
 	return true;
 }
