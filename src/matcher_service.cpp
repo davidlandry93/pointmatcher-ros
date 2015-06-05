@@ -26,6 +26,7 @@ class CloudMatcher
 	PM::ICP icp;
     bool traceMatching;
 	ros::ServiceServer service;
+    int matchedCloudsCount;
 	
 public:
 	CloudMatcher(ros::NodeHandle& n);
@@ -34,7 +35,8 @@ public:
 
 CloudMatcher::CloudMatcher(ros::NodeHandle& n):
 	n(n),
-	service(n.advertiseService("match_clouds", &CloudMatcher::match, this))
+    service(n.advertiseService("match_clouds", &CloudMatcher::match, this)),
+    matchedCloudsCount(0)
 {
 	// load config
 	string configFileName;
@@ -127,11 +129,11 @@ bool CloudMatcher::match(pointmatcher_ros::MatchClouds::Request& req, pointmatch
     if(traceMatching)
     {
         std::stringstream ss;
-        ss << "reading_" << req.readings.header.seq << ".vtk";
+        ss << "reading_" << matchedCloudsCount << ".vtk";
         readingCloud.save(ss.str());
 
         ss.str(std::string());
-        ss << "reference_" << req.readings.header.seq << ".vtk";
+        ss << "reference_" << matchedCloudsCount << ".vtk";
         referenceCloud.save(ss.str());
 
         PM::Transformation* rigidTrans;
@@ -139,9 +141,11 @@ bool CloudMatcher::match(pointmatcher_ros::MatchClouds::Request& req, pointmatch
         PM::DataPoints matchedCloud = rigidTrans->compute(readingCloud, transform);
 
         ss.str(std::string());
-        ss << "matched_" << req.readings.header.seq << ".vtk";
+        ss << "matched_" << matchedCloudsCount << ".vtk";
         matchedCloud.save(ss.str());
     }
+
+    matchedCloudsCount++;
 	
 	return true;
 }
