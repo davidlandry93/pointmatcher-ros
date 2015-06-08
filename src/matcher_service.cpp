@@ -62,10 +62,8 @@ CloudMatcher::CloudMatcher(ros::NodeHandle& n):
     if(!(ros::param::get("~trace", traceMatching)))
     {
         traceMatching = false;
-    } else {
-        ROS_INFO("Trance of the matched clouds demanded.");
     }
-	
+
 	// replace logger
 	if (getParam<bool>("useROSLogger", false))
 		PointMatcherSupport::setLogger(new PointMatcherSupport::ROSLogger);
