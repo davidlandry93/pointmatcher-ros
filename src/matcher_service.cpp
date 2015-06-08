@@ -84,7 +84,8 @@ bool CloudMatcher::match(pointmatcher_ros::MatchClouds::Request& req, pointmatch
 	}
 	if (referenceGoodRatio < 0.5)
 	{
-		ROS_WARN_STREAM("Partial reference cloud! Missing " << 100 - referenceGoodRatio*100.0 << "% of the cloud (received " << referenceGoodCount << ")");
+        ROS_WARN_STREAM("Partial reference cloud! Missing " << 100 - referenceGoodRatio*100.0 <<
+                        "% of the cloud (received " << referenceGoodCount << ")");
 	}
 	
 	// get and check reading
@@ -106,7 +107,9 @@ bool CloudMatcher::match(pointmatcher_ros::MatchClouds::Request& req, pointmatch
 	// check dimensions
 	if (referenceCloud.features.rows() != readingCloud.features.rows())
 	{
-		ROS_ERROR_STREAM("Dimensionality missmatch: reference cloud is " << referenceCloud.features.rows()-1 << " while reading cloud is " << readingCloud.features.rows()-1);
+        ROS_ERROR_STREAM("Dimensionality missmatch: reference cloud is " <<
+                         referenceCloud.features.rows() - 1 << " while reading cloud is " <<
+                         readingCloud.features.rows() - 1);
 		return false;
 	}
 	
